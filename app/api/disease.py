@@ -1,22 +1,22 @@
-from fastapi import APIRouter, UploadFile, File
+from fastapi import APIRouter, UploadFile, File, Form
 from PIL import Image
 import io
-from app.models.inference import disease_model
+from app.models.multimodal import multimodal_advisor
 
 router = APIRouter(prefix="/disease", tags=["Disease Detection"])
 
 @router.post("/detect")
-async def detect_disease(image: UploadFile = File(...)):
-    """Detect disease from uploaded crop image"""
+async def detect_disease(
+    image: UploadFile = File(...),
+    query: str = Form("")   # Optional text query
+):
     contents = await image.read()
     pil_image = Image.open(io.BytesIO(contents))
     
-    # Get prediction from model
-    result = disease_model.predict(pil_image)
+    result = multimodal_advisor.analyze(pil_image, query)
     
     return {
         "status": "success",
         "filename": image.filename,
-        "prediction": result,
-        "message": "This is a working prototype. Real AI model coming soon."
+        "result": result
     }
