@@ -5,3 +5,5 @@ torchvision
 torchaudio
 pillow
 huggingface_hub
+pydantic-settings
+python-multipart
