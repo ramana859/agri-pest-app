@@ -1,27 +1,23 @@
 from PIL import Image
 from app.models.inference import disease_model
+from app.services.price_service import price_service
 
 class MultimodalAdvisor:
     def __init__(self):
-        print("✅ Multimodal Advisor initialized")
+        print("✅ Multimodal + Price Advisor Ready")
 
-    def analyze(self, image: Image.Image, text_query: str = ""):
-        # Get vision prediction
+    async def analyze(self, image: Image.Image, text_query: str = ""):
         vision_result = disease_model.predict(image)
+        price_info = await price_service.get_price("tomato")   # Can make dynamic later
         
-        # Simple text understanding (will improve with real LLM later)
-        query_lower = text_query.lower()
-        
-        response = {
-            "vision_prediction": vision_result,
-            "user_query": text_query,
-            "combined_advice": vision_result["recommendation"],
-            "note": "Multimodal feature activated. You can now ask questions in Hindi or English."
+        return {
+            "crop": vision_result.get("crop", "Tomato / Brinjal"),
+            "disease": vision_result["disease"],
+            "confidence": vision_result["confidence"],
+            "market_price": price_info,
+            "recommendation": vision_result["recommendation"],
+            "price_advice": price_info["advice"],
+            "note": "Combined AI + Market Advisory"
         }
-        
-        if "hindi" in query_lower or "नीम" in query_lower or "treatment" in query_lower:
-            response["combined_advice"] += "\n\nहिंदी में सलाह: नीम का तेल स्प्रे करें। प्रभावित पत्तियों को हटा दें।"
-        
-        return response
 
 multimodal_advisor = MultimodalAdvisor()

@@ -8,15 +8,22 @@ router = APIRouter(prefix="/disease", tags=["Disease Detection"])
 @router.post("/detect")
 async def detect_disease(
     image: UploadFile = File(...),
-    query: str = Form("")   # Optional text query
+    query: str = Form("")  
 ):
-    contents = await image.read()
-    pil_image = Image.open(io.BytesIO(contents))
-    
-    result = multimodal_advisor.analyze(pil_image, query)
-    
-    return {
-        "status": "success",
-        "filename": image.filename,
-        "result": result
-    }
+    try:
+        contents = await image.read()
+        pil_image = Image.open(io.BytesIO(contents))
+        
+        result = await multimodal_advisor.analyze(pil_image, query)
+        
+        return {
+            "status": "success",
+            "filename": image.filename,
+            "analysis": result
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": "Failed to process image",
+            "detail": str(e)
+        }
